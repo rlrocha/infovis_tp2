@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <div id="div_tooltip"></div>
+
+    <meta charset="utf-8">
+    <title>TP2</title>
+    <script type="text/javascript" src="http://d3js.org/d3.v6.js"></script>
+
+    <style type="text/css">
+        .bar { fill: steelblue; }
+
+        #title {
+        display: table;
+        margin: 0 auto;
+        border: 1px solid black;
+        }
+
+    </style>
+
+    <script type="text/javascript">
+
+        function chart1 (alldata) {
+
+            let geo_data = alldata[0],
+                data = alldata[1];
+
+            var margin = {top: 20, right: 20, bottom: 80, left: 60},
+                    width = 480 - margin.left - margin.right,
+                    height = 250 - margin.top - margin.bottom;
+                
+            // set the ranges
+            var x = d3.scaleBand()
+                    .range([0, width])
+                    .padding(0.1);
+            var y = d3.scaleLinear()
+                    .range([height, 0]);
+
+            let tooltip = d3.select("#div_tooltip")
+                .append("div")
+                .style("position", "absolute")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("border", "solid")
+                .style("border-width", "1px")
+                .style("border-radius", "5px")
+                .style("padding", "5px");
+                    
+            // append the svg object to the body of the page
+            // append a 'group' element to 'svg'
+            // moves the 'group' element to the top left margin
+            svg_cc = d3.select("#chart1").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+                .attr("transform", 
+                    "translate(" + margin.left + "," + margin.top + ")");
+
+            // Somente meteoritos cuja queda foi observada
+            data = data.filter(function(d) { return d.fall == "Fell"})
+
+            // Agrupo as ocorrências de quedas de meteoritos por classe
+            group =  Array.from(d3.rollup(data, v => v.length, d => d.recclass))
+
+            var data2 = group.map(function(d) {
+                return {
+                class: d[0],
+                count: d[1]
+                };
+            });
+
+            // Somente as classes cujas ocorrências são maior que a média
+            let mean_count = d3.mean(data2, g => +g["count"]);
+            data2 = data2.filter(function(d) { return d.count > mean_count})
+
+            let mouseover = function(d) {
+                tooltip
+                .style("opacity", 1)
+                d3.select(this)
+                .style("stroke", "black")
+            }
+
+            let mousemove = function(event, d) {
+                tooltip
+                .html("Ocorrências: "+d.count + "<br/>" + "Classe: "+d.class)
+                .style("left", (event.pageX) + "px")
+                .style("top", (event.pageY) + "px");
+            }
+
+            let mouseleave = function(d) {
+                tooltip
+                .style("opacity", 0)
+                d3.select(this)
+                .style("stroke", "none")
+            }
+
+            // Scale the range of the data in the domains
+            x.domain(data2.map(function(d) { return d.class; }));
+            y.domain([0, d3.max(data2, function(d) { return d.count; })]);
+
+            // append the rectangles for the bar chart
+            svg_cc.selectAll(".bar")
+                .data(data2)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("fill", "blue")
+                .attr("x", function(d) { return x(d.class); })
+                .attr("width", x.bandwidth())
+                .attr("y", function(d) { return y(d.count); })
+                .attr("height", function(d) { return height - y(d.count); })
+                .on("mousedown", function(e, d) {
+                    console.log("Classe: "+d.class)
+                    chart2(alldata, d.class);
+                    chart4(alldata, d.class);
+                })
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave);
+
+            // add the x Axis
+            svg_cc.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                        .style("text-anchor", "end")
+                        .attr("dx", "-.8em")
+                        .attr("dy", ".15em")
+                        .attr("transform", "rotate(-90)");
+
+            // add the y Axis
+            svg_cc.append("g")
+                .call(d3.axisLeft(y)
+                );
+
+            svg_cc.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate("+ -35 +","+(height/2)+")rotate(-90)")
+                .text("Ocorrências")
+            
+            svg_cc.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate("+ (width/2) +","+(height-(-220/3))+")")
+                .text("Classe")
+
+        }
+
+        function chart2 (alldata, classe) {
+
+            let geo_data = alldata[0],
+                dataCompleto = alldata[1];
+
+            dataGlobal = dataCompleto
+            var data = []
+            if(classe){
+                data = dataCompleto.filter(function(d){ return d.recclass==classe})
+                data.columns = dataCompleto.columns
+            }else{
+                data = dataCompleto
+            }
+
+            d3.select("#chart2").select("svg").remove();
+
+            var margin = {top: 20, right: 20, bottom: 80, left: 60},
+                    width = 480 - margin.left - margin.right,
+                    height = 250 - margin.top - margin.bottom;
+                
+            // set the ranges
+            var x = d3.scaleBand()
+                    .range([0, width])
+                    .padding(0.1);
+            var y = d3.scaleLinear()
+                    .range([height, 0]);
+                
+            let tooltip = d3.select("#div_tooltip")
+                .append("div")
+                .style("position", "absolute")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("border", "solid")
+                .style("border-width", "1px")
+                .style("border-radius", "5px")
+                .style("padding", "5px");
+
+            // append the svg object to the body of the page
+            // append a 'group' element to 'svg'
+            // moves the 'group' element to the top left margin
+            svg_lc = d3.select("#chart2").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+                .attr("transform", 
+                    "translate(" + margin.left + "," + margin.top + ")");
+
+            // Agrupo as ocorrências de quedas de meteoritos por ano
+            let group = Array.from(d3.rollup(data, leaves => leaves.length, d=> d.year))
+
+            var data2 = group.map(function(d) {
+                return {
+                ano: d[0],
+                count: d[1]
+                };
+            });
+
+            // Somente os anos cujas ocorrências são maior que a média
+            let mean_count = d3.mean(data2, g => +g["count"]);
+            data2 = data2.filter(function(d) { return d.count > mean_count})
+
+
+            let mouseover = function(d) {
+                tooltip
+                .style("opacity", 1)
+                d3.select(this)
+                .style("stroke", "black")
+            }
+
+            let mousemove = function(event, d) {
+                tooltip
+                .html("Ocorrências: "+d.count + "<br/>" + "Ano: "+d.ano)
+                .style("left", (event.pageX) + "px")
+                .style("top", (event.pageY) + "px");
+            }
+
+            let mouseleave = function(d) {
+                tooltip
+                .style("opacity", 0)
+                d3.select(this)
+                .style("stroke", "none")
+            }
+
+            // Scale the range of the data in the domains
+            x.domain(data2.map(function(d) { return d.ano; }));
+            y.domain([0, d3.max(data2, function(d) { return d.count; })]);
+
+            // append the rectangles for the bar chart
+            svg_lc.selectAll(".bar")
+                .data(data2)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("fill", "blue")
+                .attr("x", function(d) { return x(d.ano); })
+                .attr("width", x.bandwidth())
+                .attr("y", function(d) { return y(d.count); })
+                .attr("height", function(d) { return height - y(d.count); })
+                .on("mousedown", function(e, d) {
+                    console.log("Ano: "+d.ano)
+                    chart4(alldata, "", d.ano)
+                })
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave);
+
+            // add the x Axis
+            svg_lc.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                        .style("text-anchor", "end")
+                        .attr("dx", "-.8em")
+                        .attr("dy", ".15em")
+                        .attr("transform", "rotate(-75)");
+
+            // add the y Axis
+            svg_lc.append("g")
+                .call(d3.axisLeft(y)
+                );
+
+            svg_lc.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate("+ -45 +","+(height/2)+")rotate(-90)")
+                .text("Ocorrências")
+            
+            svg_lc.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate("+ (width/2) +","+(height-(-150/3))+")")
+                .text("Ano")
+
+        }
+
+        function chart3 (alldata) {
+
+            let geo_data = alldata[0],
+                data = alldata[1];
+
+            var margin = {top: 20, right: 20, bottom: 100, left: 60},
+            width = 580 - margin.left - margin.right,
+            height = 250 - margin.top - margin.bottom;
+
+            var x = d3.scaleBand()
+                .range([0, width])
+                .padding(0.1);
+            var y = d3.scaleLinear()
+                .range([height, 0]);
+
+            let tooltip = d3.select("#div_tooltip")
+                .append("div")
+                .style("position", "absolute")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("border", "solid")
+                .style("border-width", "1px")
+                .style("border-radius", "5px")
+                .style("padding", "5px");
+
+            svg_mc = d3.select("#chart3").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+                .attr("transform", 
+                    "translate(" + margin.left + "," + margin.top + ")");
+
+            // Agrupo a massa média por classe
+            let group = Array.from(d3.rollup(data, v => d3.mean(v, d => d.mass), d => d.recclass))
+
+            var data2 = group.map(function(d) {
+                return {
+                    class: d[0],
+                    mean_mass: d[1]
+                };
+            });
+
+            let mean = d3.mean(data2, g => +g["mean_mass"]);
+            data2 = data2.filter(function(d) { return d.mean_mass > mean})
+            
+            let mouseover = function(d) {
+                tooltip
+                .style("opacity", 1)
+                d3.select(this)
+                .style("stroke", "black")
+            }
+
+            let mousemove = function(event, d) {
+                tooltip
+                .html("Massa média: "+d.mean_mass + "<br/>" + "Classe: "+d.class)
+                .style("left", (event.pageX) + "px")
+                .style("top", (event.pageY) + "px");
+            }
+
+            let mouseleave = function(d) {
+                tooltip
+                .style("opacity", 0)
+                d3.select(this)
+                .style("stroke", "none")
+            }
+
+            x.domain(data2.map(function(d) { return d.class; }));
+            y.domain([0, d3.max(data2, function(d) { return d.mean_mass; })]);
+
+            svg_mc.selectAll(".bar")
+                .data(data2)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d) { return x(d.class); })
+                .attr("width", x.bandwidth())
+                .attr("y", function(d) { return y(d.mean_mass); })
+                .attr("height", function(d) { return height - y(d.mean_mass); })
+                .on("mousedown", function(e, d) {
+                    console.log("Classe: "+d.class)
+                    chart4(alldata, d.class, "")
+                })
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave);
+
+            svg_mc.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.8em")
+                    .attr("dy", ".15em")
+                    .attr("transform", "rotate(-90)");
+
+            svg_mc.append("g")
+                .call(d3.axisLeft(y)
+                    .tickFormat(d3.formatPrefix(".0", 1e3))
+                );
+
+            svg_mc.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate("+ -50 +","+(height/2)+")rotate(-90)")
+                .text("Massa média")
+            
+            svg_mc.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate("+ (width/2) +","+(height-(-280/3))+")")
+                .text("Classe")
+
+        }
+
+        function chart4 (alldata, classe, ano) {
+
+            let geo_data = alldata[0],
+                dataCompleto = alldata[1];
+
+            dataGlobal = dataCompleto
+            var data = []
+            if(classe){
+                data = dataCompleto.filter(function(d){ return d.recclass==classe})
+                data.columns = dataCompleto.columns
+            }
+            else if(ano){
+                data = dataCompleto.filter(function(d){ return d.year==ano})
+                data.columns = dataCompleto.columns
+            }
+            else{
+                data = dataCompleto
+            }
+
+            d3.select("#chart4").select("svg").remove();
+
+            let margin = 75,
+                width = 600 - margin,
+                height = 300 - margin;
+
+            let tooltip = d3.select("#div_tooltip")
+                .append("div")
+                .style("position", "absolute")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("border", "solid")
+                .style("border-width", "1px")
+                .style("border-radius", "5px")
+                .style("padding", "5px");
+
+            let svg_map = d3.select("#chart4")
+                .append("svg")
+                    .attr("width", width + margin)
+                    .attr("height", height + margin)
+                .append('g')
+                    .attr('class', 'map');
+                
+            let projection = d3.geoMercator()
+                .center([0, 35])
+                .scale(60)
+                .translate([width / 2, height / 2]);
+
+            let path = d3.geoPath().projection(projection);
+
+            svg_map.append("path")
+                .style("fill", "lightgray")
+                .attr("d", path(geo_data))
+                .attr("fill", "rgb(190,100,70)")
+                .attr("stroke", "black")
+                .attr("background", "#c5e8ff")
+                .attr("stroke-width", 0.1);
+
+            // Agrupo a massa média, as coordenadas x e y, e as ocorrências pelo atributo GeoLocation
+            let grouped = d3.rollup(data, 
+                function(group) {
+
+                    let mass = d3.mean(group, g => +g["mass"]);
+                    let coords = group.map( d => projection([+d.reclong, +d.reclat]));
+
+                    return { 
+                        "mass" : mass,
+                        "x": coords[0][0],
+                        "y": coords[0][1],
+                        "count": coords.length
+                    }
+                },
+                d => d["GeoLocation"]
+            );
+
+            let mouseover = function(d) {
+                tooltip
+                .style("opacity", 1)
+                d3.select(this)
+                .style("stroke", "black")
+            }
+
+            let mousemove = function(event, d) {
+                tooltip
+                .html("Massa média: "+d[1].mass + "<br/>" + "Ocorrências: "+d[1].count)
+                .style("left", (event.pageX) + "px")
+                .style("top", (event.pageY) + "px");
+            }
+
+            let mouseleave = function(d) {
+                tooltip
+                .style("opacity", 0)
+                d3.select(this)
+                .style("stroke", "none")
+            }
+
+            let mass_extent = d3.extent(grouped, d => d[1]["count"] );
+            let radius_scale = d3.scaleLinear()
+                .domain(mass_extent)
+                .range([1,15]);
+            
+            let count_extent = d3.extent(grouped, d => d[1]["mass"])
+            let colorScale = d3.scaleLinear()
+                .domain(count_extent)
+                .range(["lightblue", "darkblue"])
+
+            svg_map.append('g')
+                .attr("class", "mass")
+            .selectAll("circle")
+            .data(grouped)
+            .join("circle")
+                .attr("cx", d => d[1]["x"])
+                .attr("cy", d => d[1]["y"])
+                .attr("stroke", "black")
+                .attr("stroke-width", 0.1)
+                .attr("r", d => radius_scale(d[1].count))
+                .attr("fill", d => colorScale(d[1].mass))
+                .on("mousedown", function(e, d) {
+                    console.log("Massa média: "+d[1].mass)
+                    console.log("Ocorrências: "+d[1].count)
+                })
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave);
+
+            let zoom = d3.zoom()
+                .scaleExtent([1, 8])
+                .on("zoom", function(event){
+                    svg_map.selectAll("path")
+                        .attr("transform",  event.transform)
+                    svg_map.selectAll("circle")
+                        .attr("transform", event.transform)
+                })
+            
+            svg_map.call(zoom);
+
+        }
+
+    </script>
+</head>
+<body>
+
+    <div id="title"> Queda de meteoritos </div>
+
+    <script type="text/javascript">
+        
+    </script>
+
+    <svg id="chart1" width="480" height="250"></svg>
+    <svg id="chart2" width="480" height="250"></svg>
+    <svg id="chart3" width="580" height="250"></svg>
+    <svg id="chart4" width="600" height="300"></svg>
+
+    <button id="b1">
+        Restaurar visualizações
+    </button>
+</body>
+
+    <script type="text/javascript">
+
+        let dataGlobal = [];
+
+        geo_data_name = "world_countries.json"
+        data_name = "meteorite-landings-v2.csv"
+
+        Promise.all([
+        d3.json(geo_data_name),
+        d3.csv(data_name)
+            ]).then(chart1)
+            .catch(function(err){console.log(err)});
+
+        Promise.all([
+        d3.json(geo_data_name),
+        d3.csv(data_name)
+            ]).then(chart2)
+            .catch(function(err){console.log(err)});
+
+        Promise.all([
+        d3.json(geo_data_name),
+        d3.csv(data_name)
+            ]).then(chart3)
+            .catch(function(err){console.log(err)});
+
+        Promise.all([
+        d3.json(geo_data_name),
+        d3.csv(data_name)
+            ]).then(chart4)
+            .catch(function(err){console.log(err)});
+
+        d3.select("#b1").on("mousedown", function(e,d){ 
+
+            Promise.all([
+            d3.json(geo_data_name),
+            d3.csv(data_name)
+                ]).then(chart2)
+                .catch(function(err){console.log(err)});
+                
+            Promise.all([
+            d3.json(geo_data_name),
+            d3.csv(data_name)
+                ]).then(chart4)
+                .catch(function(err){console.log(err)});
+        })
+
+    </script>
+
+</html>
