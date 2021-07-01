@@ -10,7 +10,11 @@ A base de dados trabalhada contém informações sobre a queda de meteoritos na 
 
 ## Pré-processamento
 
-O arquivo [meteorite-landings.ipynb](meteorite-landings.ipynb) contém pré-processamentos realizados nos dados da [base de dados original](meteorite-landings.csv), como remoções de valores nulos, atributo massa igual a 0 e coordenadas (0,0). 
+O arquivo [meteorite-landings.ipynb](meteorite-landings.ipynb) contém pré-processamentos realizados nos dados da [base de dados original](meteorite-landings.csv), como remoções de valores nulos, atributo massa igual a 0 e coordenadas (0,0). A arquivo [meteorite-landings-v2.csv](meteorite-landings-v2.csv) contém os dados utilizados no desenvolvimento do trabalho.
+
+## Mapa
+
+O arquivo [JSON](world_countries.json) contém as informações geométricas do mapa utilizado nas visualizações.
 
 ## Perguntas
 
