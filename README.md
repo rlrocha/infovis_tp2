@@ -4,7 +4,7 @@ Trabalho desenvolvido na disciplina Visualização da Informação do Programa d
 
 O trabalho desenvolvido visa criar uma ferramenta de visualização da informação utilizando o D3.js. As visualizações geradas precisam responder ao menos 3 perguntas que envolvam entre 3 e 4 atributos da base de dados utilizada. Uma das visualizações deve ser obrigatoriamente com base em mapas.
 
-## [Base de dados](meteorite-landings-v2.csv)
+## Base de dados
 
 A base de dados trabalhada contém informações sobre a queda de meteoritos na terra, e está disponível em <https://www.kaggle.com/nasa/meteorite-landings>.
 
