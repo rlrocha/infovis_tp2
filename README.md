@@ -21,3 +21,7 @@ O arquivo [JSON](world_countries.json) contém as informações geométricas do 
 1. Dentre os intervalos de tempo com grade número de episódios de meteoritos, quais as regiões mais afetadas e qual a massa média dos meteoritos nesta região?
 2. Qual a massa média da classe predominante de meteoritos e em qual região eles costumam mais ocorrer? 
 3. Qual a classe predominante dos meteoritos do tipo Fell, qual o período de sua maior ocorrência e em quais locais eles são mais comumente encontrados? 
+
+## Vídeo
+
+Um melhor detalhamento do que foi desenvolvido e das visualizações geradas com o D3.js encontra-se disponível em: <https://youtu.be/ov9QcZWFRaQ>.
